@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guitarisation — Métronome</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #f5f5f3;
+      --card: #ffffff;
+      --accent: #ff5533;
+      --accent-soft: #fff2ef;
+      --dark: #111111;
+      --text: #1a1a1a;
+      --muted: #9ca3af;
+      --muted2: #6b7280;
+      --border: #e8e8e4;
+      --border2: #f0f0ec;
+      --shadow: 0 40px 100px rgba(0,0,0,0.08), 0 16px 40px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04);
+      --r: 22px;
+      --r-sm: 11px;
+      --r-xs: 8px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { font-size: 16px; }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px 20px 16px;
+      color: var(--text);
+    }
+
+    /* ─── HEADER ─── */
+    header {
+      width: 100%;
+      max-width: 760px;
+      padding: 4px 0 10px;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-size: 20px;
+      font-weight: 900;
+      letter-spacing: -0.5px;
+      color: var(--dark);
+      line-height: 1;
+    }
+
+    .logo em {
+      font-style: normal;
+      color: var(--accent);
+    }
+
+    .logo-tag {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 3px;
+    }
+
+    .shortcuts-hint {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      text-align: right;
+      line-height: 1.6;
+    }
+
+    .shortcut-key {
+      display: inline-block;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 1px 5px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    }
+
+    /* ─── MAIN CARD ─── */
+    .card {
+      background: var(--card);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      width: 100%;
+      max-width: 760px;
+      overflow: hidden;
+    }
+
+    /* ─── SECTION: TOP (BPM + Controls) ─── */
+    .sec-top {
+      padding: 16px 40px 14px;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    /* ─── COUNTDOWN BANNER ─── */
+    .countdown-banner {
+      text-align: center;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--accent);
+      height: 14px;
+      margin-bottom: 8px;
+      transition: opacity 0.2s;
+    }
+
+    /* ─── BEAT INDICATOR ─── */
+    .beat-indicator {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 10px;
+      min-height: 18px;
+    }
+
+    .beat-dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.05s ease-out, transform 0.05s ease-out, box-shadow 0.05s ease-out;
+      flex-shrink: 0;
+    }
+
+    .beat-dot.first {
+      width: 13px;
+      height: 13px;
+    }
+
+    .beat-dot.active {
+      background: var(--accent);
+      transform: scale(1.55);
+      box-shadow: 0 0 14px rgba(255,85,51,0.45);
+    }
+
+    .beat-dot.first.active-accent {
+      background: var(--dark) !important;
+      box-shadow: 0 0 14px rgba(17,17,17,0.3) !important;
+    }
+
+    /* ─── BPM DISPLAY ─── */
+    .bpm-section {
+      text-align: center;
+      margin-bottom: 12px;
+      user-select: none;
+    }
+
+    .bpm-row {
+      display: inline-flex;
+      align-items: flex-end;
+      gap: 10px;
+      line-height: 1;
+      cursor: ns-resize;
+    }
+
+    .bpm-number {
+      font-size: 92px;
+      font-weight: 900;
+      letter-spacing: -5px;
+      color: var(--dark);
+      font-variant-numeric: tabular-nums;
+      transition: transform 0.05s ease-out;
+      display: inline-block;
+    }
+
+    .bpm-number.flash {
+      transform: scale(1.015);
+    }
+
+    .bpm-unit {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--muted);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      padding-bottom: 14px;
+    }
+
+    .tempo-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      margin-top: 4px;
+      height: 16px;
+    }
+
+    /* ─── PLAY BUTTON ─── */
+    .play-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--dark);
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      margin: 0 auto 16px;
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.18);
+      outline: none;
+    }
+
+    .play-btn:hover {
+      transform: scale(1.06);
+      box-shadow: 0 14px 36px rgba(0,0,0,0.22);
+    }
+
+    .play-btn:active { transform: scale(0.96); }
+
+    .play-btn.playing {
+      background: var(--accent);
+      box-shadow: 0 8px 28px rgba(255,85,51,0.35);
+    }
+
+    .play-icon {
+      pointer-events: none;
+      transform: translateX(2px); /* optical centering for play triangle */
+    }
+
+    .play-icon.stop-icon { transform: translateX(0); }
+
+    /* ─── BPM CONTROLS ─── */
+    .bpm-controls {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .adj-btn {
+      flex-shrink: 0;
+      padding: 0;
+      width: 44px;
+      height: 36px;
+      border-radius: var(--r-xs);
+      background: var(--border2);
+      border: 1.5px solid var(--border);
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      transition: background 0.1s, transform 0.08s, border-color 0.1s;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .adj-btn:hover { background: var(--border); border-color: #d8d8d4; transform: translateY(-1px); }
+    .adj-btn:active { transform: translateY(0); }
+
+    .adj-btn.wide { width: 50px; }
+
+    /* ─── SLIDER ─── */
+    .slider-wrap {
+      flex: 1;
+      padding: 0 4px;
+    }
+
+    input[type="range"] {
+      -webkit-appearance: none;
+      width: 100%;
+      height: 5px;
+      border-radius: 3px;
+      background: var(--border);
+      outline: none;
+      cursor: pointer;
+      display: block;
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--dark);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+      transition: transform 0.1s;
+      border: 3px solid white;
+    }
+
+    input[type="range"]::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    input[type="range"]:focus::-webkit-slider-thumb { transform: scale(1.15); }
+
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--dark);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.22);
+      border: 3px solid white;
+    }
+
+    /* ─── SECTION: SETTINGS ─── */
+    .sec-settings {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .setting-group {
+      padding: 12px 20px;
+      border-right: 1px solid var(--border2);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .setting-group:last-child { border-right: none; }
+
+    .setting-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* Time signature */
+    .time-sig-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .time-sep {
+      font-size: 28px;
+      font-weight: 200;
+      color: var(--muted);
+      line-height: 1;
+    }
+
+    select {
+      -webkit-appearance: none;
+      padding: 6px 10px;
+      border-radius: var(--r-xs);
+      border: 1.5px solid var(--border);
+      background: white;
+      font-family: inherit;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+      min-width: 54px;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+
+    select:focus, select:hover { border-color: var(--accent); }
+
+    /* Subdivision buttons */
+    .subdiv-btns {
+      display: flex;
+      gap: 5px;
+    }
+
+    .subdiv-btn {
+      flex: 1;
+      padding: 6px 4px;
+      border-radius: var(--r-xs);
+      border: 1.5px solid var(--border);
+      background: white;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted2);
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.12s;
+      font-family: inherit;
+      line-height: 1;
+      outline: none;
+    }
+
+    .subdiv-btn:hover { border-color: var(--muted); color: var(--text); }
+
+    .subdiv-btn.active {
+      background: var(--dark);
+      border-color: var(--dark);
+      color: white;
+    }
+
+    /* Toggle */
+    .toggle-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .toggle {
+      position: relative;
+      width: 46px;
+      height: 26px;
+      flex-shrink: 0;
+    }
+
+    .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+    .toggle-track {
+      position: absolute;
+      inset: 0;
+      border-radius: 13px;
+      background: var(--border);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 3px;
+      left: 3px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: white;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+      transition: transform 0.2s;
+    }
+
+    .toggle input:checked + .toggle-track { background: var(--accent); }
+    .toggle input:checked + .toggle-track::after { transform: translateX(20px); }
+
+    .toggle-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--muted2);
+    }
+
+    /* ─── SECTION: TOOLS ─── */
+    .sec-tools {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .tool-group {
+      padding: 12px 20px;
+      border-right: 1px solid var(--border2);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .tool-group:last-child { border-right: none; }
+
+    /* Tap tempo */
+    .tap-btn {
+      flex: 1;
+      padding: 0;
+      height: 58px;
+      border-radius: var(--r-sm);
+      border: 2px dashed var(--border);
+      background: var(--border2);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted2);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.1s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      outline: none;
+    }
+
+    .tap-btn span { font-size: 10px; font-weight: 500; opacity: 0.6; }
+
+    .tap-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+    .tap-btn:active { transform: scale(0.97); background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+    .tap-btn.tapped { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
+
+    /* Tool card (stopwatch / timer) */
+    .tool-inner {
+      background: var(--border2);
+      border-radius: var(--r-sm);
+      padding: 8px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .time-display {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -1px;
+      color: var(--dark);
+      font-variant-numeric: tabular-nums;
+      line-height: 1;
+    }
+
+    .time-display.warning { color: var(--accent); }
+
+    .tool-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .tool-btn {
+      flex: 1;
+      padding: 6px 4px;
+      border-radius: var(--r-xs);
+      border: none;
+      background: white;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+      transition: all 0.1s;
+      outline: none;
+    }
+
+    .tool-btn:hover { background: var(--accent); color: white; }
+    .tool-btn:active { transform: scale(0.97); }
+    .tool-btn.active-btn { background: var(--accent); color: white; }
+
+    .timer-input-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .num-input {
+      width: 56px;
+      padding: 7px 8px;
+      border-radius: var(--r-xs);
+      border: 1.5px solid var(--border);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      color: var(--text);
+      background: white;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+
+    .num-input:focus { border-color: var(--accent); }
+
+    .input-unit {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted2);
+    }
+
+    /* ─── SECTION: COUNTDOWN ─── */
+    .sec-countdown {
+      padding: 10px 20px;
+      border-bottom: 1px solid var(--border2);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .countdown-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .countdown-opts {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .cnt-btn {
+      padding: 8px 16px;
+      border-radius: 100px;
+      border: 1.5px solid var(--border);
+      background: white;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted2);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.1s;
+      outline: none;
+    }
+
+    .cnt-btn:hover { border-color: var(--text); color: var(--text); }
+    .cnt-btn.active { background: var(--dark); border-color: var(--dark); color: white; }
+
+    /* ─── SECTION: PROGRESSIVE ─── */
+    .sec-progressive {
+      border-bottom: 1px solid var(--border2);
+    }
+
+    .prog-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 11px 20px;
+      cursor: pointer;
+      user-select: none;
+      transition: background 0.1s;
+    }
+
+    .prog-header:hover { background: var(--border2); }
+
+    .prog-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .prog-title-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.2s;
+    }
+
+    .prog-title-dot.enabled { background: var(--accent); }
+
+    .prog-header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .prog-chevron {
+      font-size: 11px;
+      color: var(--muted);
+      transition: transform 0.25s;
+    }
+
+    .prog-chevron.open { transform: rotate(180deg); }
+
+    .prog-body {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.3s ease;
+    }
+
+    .prog-body.open { max-height: 240px; }
+
+    .prog-inner {
+      padding: 4px 20px 14px;
+    }
+
+    .prog-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .prog-field {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .prog-input {
+      width: 100%;
+      padding: 7px 8px;
+      border-radius: var(--r-xs);
+      border: 1.5px solid var(--border);
+      font-size: 15px;
+      font-weight: 700;
+      font-family: inherit;
+      color: var(--text);
+      background: white;
+      outline: none;
+      text-align: center;
+      transition: border-color 0.15s;
+    }
+
+    .prog-input:focus { border-color: var(--accent); }
+
+    .prog-bars-wrap {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Progress bar */
+    .prog-progress {
+      display: none;
+    }
+
+    .prog-progress.visible { display: block; }
+
+    .prog-bar-track {
+      height: 5px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+
+    .prog-bar-fill {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .prog-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted2);
+    }
+
+    /* ─── KEYBOARD SHORTCUTS FOOTER ─── */
+    .card-footer {
+      padding: 16px 28px;
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--muted);
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .kbd {
+      background: var(--border2);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 6px;
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text);
+      font-family: inherit;
+      box-shadow: 0 1px 0 var(--border);
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 640px) {
+      body { padding: 16px 12px 60px; }
+      header { padding-bottom: 16px; }
+      .shortcuts-hint { display: none; }
+      .sec-top { padding: 28px 20px 28px; }
+      .bpm-number { font-size: 88px; letter-spacing: -4px; }
+      .bpm-unit { padding-bottom: 14px; font-size: 13px; }
+      .sec-settings { grid-template-columns: 1fr 1fr; }
+      .setting-group { padding: 18px 16px; }
+      .setting-group:nth-child(2) { border-right: none; }
+      .setting-group:nth-child(3) { border-top: 1px solid var(--border2); border-right: 1px solid var(--border2); grid-column: 1; }
+      .sec-tools { grid-template-columns: 1fr; }
+      .tool-group { padding: 18px 16px; border-right: none; border-bottom: 1px solid var(--border2); }
+      .tool-group:last-child { border-bottom: none; }
+      .sec-countdown { padding: 16px; flex-wrap: wrap; }
+      .prog-inner { padding: 4px 16px 20px; }
+      .prog-grid { grid-template-columns: 1fr 1fr; }
+      .prog-header { padding: 16px; }
+      .card-footer { padding: 14px 16px; }
+      .adj-btn { width: 42px; }
+      .adj-btn.wide { width: 50px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header>
+  <div>
+    <div class="logo">Guitar<em>isation</em></div>
+    <div class="logo-tag">Métronome</div>
+  </div>
+  <div class="shortcuts-hint">
+    <span class="shortcut-key">Espace</span> Play/Stop &nbsp;
+    <span class="shortcut-key">T</span> Tap tempo<br>
+    <span class="shortcut-key">↑ ↓</span> ±1 BPM &nbsp;
+    <span class="shortcut-key">⇧↑ ⇧↓</span> ±5 BPM &nbsp;
+    <span class="shortcut-key">Molette</span> BPM
+  </div>
+</header>
+
+<!-- ─── MAIN CARD ─── -->
+<div class="card">
+
+  <!-- TOP: BPM + Controls -->
+  <div class="sec-top">
+
+    <div class="countdown-banner" id="countdownBanner"></div>
+
+    <!-- Beat indicator dots -->
+    <div class="beat-indicator" id="beatIndicator"></div>
+
+    <!-- BPM Display -->
+    <div class="bpm-section">
+      <div class="bpm-row" id="bpmRow" title="Molette pour ajuster">
+        <span class="bpm-number" id="bpmDisplay">120</span>
+        <span class="bpm-unit">BPM</span>
+      </div>
+      <div class="tempo-name" id="tempoName">Allegro</div>
+    </div>
+
+    <!-- Play / Stop -->
+    <button class="play-btn" id="playBtn" onclick="togglePlay()" title="Espace">
+      <span class="play-icon" id="playIcon">&#9654;</span>
+    </button>
+
+    <!-- BPM Adjustments + Slider -->
+    <div class="bpm-controls">
+      <button class="adj-btn wide" onclick="adjustBPM(-5)">−5</button>
+      <button class="adj-btn" onclick="adjustBPM(-1)">−1</button>
+      <div class="slider-wrap">
+        <input type="range" id="bpmSlider" min="20" max="300" value="120"
+               oninput="setBPM(parseInt(this.value))">
+      </div>
+      <button class="adj-btn" onclick="adjustBPM(1)">+1</button>
+      <button class="adj-btn wide" onclick="adjustBPM(5)">+5</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS: Mesure / Pulsation / Accent -->
+  <div class="sec-settings">
+
+    <div class="setting-group">
+      <div class="setting-label">Mesure</div>
+      <div class="time-sig-wrap">
+        <select id="beatsSelect" onchange="setBeatsPerMeasure(parseInt(this.value))">
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4" selected>4</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="12">12</option>
+        </select>
+        <span class="time-sep">/</span>
+        <select id="noteValueSelect" onchange="setNoteValue(parseInt(this.value))">
+          <option value="2">2</option>
+          <option value="4" selected>4</option>
+          <option value="8">8</option>
+          <option value="16">16</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-label">Pulsation</div>
+      <div class="subdiv-btns">
+        <button class="subdiv-btn active" data-val="1" onclick="setSubdiv(1)" title="Noire">♩</button>
+        <button class="subdiv-btn" data-val="2" onclick="setSubdiv(2)" title="Croche">♪♪</button>
+        <button class="subdiv-btn" data-val="3" onclick="setSubdiv(3)" title="Triolet">♩³</button>
+        <button class="subdiv-btn" data-val="4" onclick="setSubdiv(4)" title="Double croche">♬</button>
+      </div>
+    </div>
+
+    <div class="setting-group">
+      <div class="setting-label">Accent sur 1</div>
+      <div class="toggle-wrap">
+        <label class="toggle">
+          <input type="checkbox" id="accentToggle" checked onchange="setAccent(this.checked)">
+          <span class="toggle-track"></span>
+        </label>
+        <span class="toggle-text" id="accentLabel">Activé</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOOLS: Tap / Chronomètre / Minuteur -->
+  <div class="sec-tools">
+
+    <!-- Tap Tempo -->
+    <div class="tool-group">
+      <div class="setting-label">Tap Tempo</div>
+      <button class="tap-btn" id="tapBtn" onclick="tap()">
+        Tap ici
+        <span>Touche T ou clic</span>
+      </button>
+    </div>
+
+    <!-- Chronomètre -->
+    <div class="tool-group">
+      <div class="setting-label">Chronomètre de pratique</div>
+      <div class="tool-inner">
+        <div class="time-display" id="swDisplay">00:00</div>
+        <div class="tool-btns">
+          <button class="tool-btn" id="swBtn" onclick="toggleStopwatch()">Démarrer</button>
+          <button class="tool-btn" onclick="resetStopwatch()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Minuteur -->
+    <div class="tool-group">
+      <div class="setting-label">Minuteur</div>
+      <div class="tool-inner">
+        <div class="time-display" id="timerDisplay">05:00</div>
+        <div class="timer-input-row">
+          <input type="number" class="num-input" id="timerMin" value="5" min="1" max="120" oninput="onTimerInput()">
+          <span class="input-unit">min</span>
+          <input type="number" class="num-input" id="timerSec" value="0" min="0" max="59" style="width:48px" oninput="onTimerInput()">
+          <span class="input-unit">sec</span>
+        </div>
+        <div class="tool-btns">
+          <button class="tool-btn" id="timerBtn" onclick="toggleTimer()">Démarrer</button>
+          <button class="tool-btn" onclick="resetTimer()">Reset</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="sec-countdown">
+    <div class="countdown-label">Décompte</div>
+    <div class="countdown-opts">
+      <button class="cnt-btn active" data-bars="0" onclick="setCountdown(0)">Aucun</button>
+      <button class="cnt-btn" data-bars="1" onclick="setCountdown(1)">1 mesure</button>
+      <button class="cnt-btn" data-bars="2" onclick="setCountdown(2)">2 mesures</button>
+      <button class="cnt-btn" data-bars="4" onclick="setCountdown(4)">4 mesures</button>
+    </div>
+  </div>
+
+  <!-- PROGRESSIVE METRONOME -->
+  <div class="sec-progressive">
+    <div class="prog-header" onclick="toggleProgPanel()">
+      <div class="prog-title">
+        <div class="prog-title-dot" id="progDot"></div>
+        Métronome progressif
+      </div>
+      <div class="prog-header-right">
+        <label class="toggle" onclick="event.stopPropagation()">
+          <input type="checkbox" id="progToggle" onchange="setProgressive(this.checked)">
+          <span class="toggle-track"></span>
+        </label>
+        <span class="prog-chevron" id="progChevron">▼</span>
+      </div>
+    </div>
+
+    <div class="prog-body" id="progBody">
+      <div class="prog-inner">
+        <div class="prog-grid">
+          <div class="prog-field">
+            <div class="field-label">Tempo départ</div>
+            <input type="number" class="prog-input" id="progStart" value="80" min="20" max="299">
+          </div>
+          <div class="prog-field">
+            <div class="field-label">Tempo final</div>
+            <input type="number" class="prog-input" id="progEnd" value="160" min="21" max="300">
+          </div>
+          <div class="prog-field">
+            <div class="field-label">Augmente de</div>
+            <input type="number" class="prog-input" id="progIncr" value="5" min="1" max="50">
+          </div>
+          <div class="prog-field">
+            <div class="field-label">Toutes les</div>
+            <div class="prog-bars-wrap">
+              <input type="number" class="prog-input" id="progBars" value="4" min="1" max="64">
+              <span class="input-unit" style="font-size:11px;white-space:nowrap">mesures</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress bar (visible while playing) -->
+        <div class="prog-progress" id="progProgress">
+          <div class="prog-bar-track">
+            <div class="prog-bar-fill" id="progFill" style="width:0%"></div>
+          </div>
+          <div class="prog-labels">
+            <span id="progLabelStart">80 BPM</span>
+            <span id="progLabelCurrent" style="color:var(--accent);font-weight:700">80 BPM</span>
+            <span id="progLabelEnd">160 BPM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+</div><!-- .card -->
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let bpm          = 120;
+let beatsPerBar  = 4;
+let noteValue    = 4;
+let subdivision  = 1;   // 1=♩, 2=♪♪, 3=♩³, 4=♬
+let accentOn     = true;
+let countdownBars = 0;
+
+let progressiveOn = false;
+let progPanelOpen = false;
+
+// ═══════════════════════════════════════════════
+// AUDIO ENGINE
+// ═══════════════════════════════════════════════
+let audioCtx   = null;
+let isPlaying  = false;
+let timerID    = null;
+
+// Scheduler state
+let nextBeatTime  = 0;
+let curBeat       = 0;
+let curSubdiv     = 0;
+let curMeasure    = 0;
+let workingBPM    = 120;   // may diverge from bpm during progressive
+
+// Countdown state
+let cntActive     = false;
+let cntLeft       = 0;
+
+const LOOKAHEAD      = 25;    // ms between scheduler calls
+const SCHEDULE_AHEAD = 0.12;  // seconds to schedule ahead
+
+function initAudio() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+}
+
+// ── Click sound synthesizer ──────────────────────
+function playClick(time, type) {
+  // type: 'accent' | 'beat' | 'sub'
+  // Electronic metronome sound: sine oscillator with fast exponential decay
+  const ctx = audioCtx;
+
+  let freq, vol, dur;
+  if (type === 'accent') {
+    freq = 1200;  // accent — plus aigu pour se distinguer
+    vol  = 0.85;
+    dur  = 0.055;
+  } else if (type === 'beat') {
+    freq = 750;   // beat — zone confortable d'un métronome électronique classique
+    vol  = 0.65;
+    dur  = 0.045;
+  } else {
+    freq = 440;   // subdiv — doux, une octave sous le beat
+    vol  = 0.3;
+    dur  = 0.035;
+  }
+
+  const osc  = ctx.createOscillator();
+  const gain = ctx.createGain();
+
+  osc.type = 'sine';
+  osc.frequency.value = freq;
+
+  // Instant attack, fast exponential decay → clean electronic "beep"
+  gain.gain.setValueAtTime(0, time);
+  gain.gain.linearRampToValueAtTime(vol, time + 0.002);
+  gain.gain.exponentialRampToValueAtTime(0.001, time + dur);
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+  osc.start(time);
+  osc.stop(time + dur + 0.01);
+}
+
+// ── Schedule a single note ───────────────────────
+function scheduleNote(beat, sub, time) {
+  const isFirst = (beat === 0 && sub === 0);
+  const isOnBeat = (sub === 0);
+
+  let type;
+  if (isFirst && accentOn) type = 'accent';
+  else if (isOnBeat)       type = 'beat';
+  else                     type = 'sub';
+
+  playClick(time, type);
+
+  // Visual update timed to audio
+  const delay = Math.max(0, (time - audioCtx.currentTime) * 1000);
+  setTimeout(() => flashBeat(beat, sub), delay);
+}
+
+// ── Advance internal clock ───────────────────────
+function advanceClock() {
+  const spb = 60.0 / workingBPM;          // seconds per beat
+  const sps = spb / subdivision;           // seconds per subdivision
+  nextBeatTime += sps;
+
+  curSubdiv++;
+  if (curSubdiv >= subdivision) {
+    curSubdiv = 0;
+    curBeat++;
+    if (curBeat >= beatsPerBar) {
+      curBeat = 0;
+      onBarEnd();
+    }
+  }
+}
+
+// ── Called at the end of each bar ───────────────
+function onBarEnd() {
+  if (cntActive) {
+    cntLeft--;
+    // UI update dispatched asynchronously
+    const left = cntLeft;
+    setTimeout(() => updateCountdownBanner(left), 0);
+    if (cntLeft <= 0) {
+      cntActive = false;
+      setTimeout(() => updateCountdownBanner(0, false), 0);
+      if (progressiveOn) {
+        workingBPM = getProgStart();
+      }
+    }
+  } else {
+    curMeasure++;
+    if (progressiveOn) {
+      const bars  = getProgBars();
+      const incr  = getProgIncr();
+      const end   = getProgEnd();
+      if (curMeasure % bars === 0 && workingBPM < end) {
+        workingBPM = Math.min(workingBPM + incr, end);
+        const snap = workingBPM;
+        setTimeout(() => {
+          bpm = snap;
+          updateBPMDisplay();
+          renderProgressBar();
+        }, 0);
+      }
+    }
+  }
+}
+
+// ── The scheduler loop ───────────────────────────
+function scheduler() {
+  while (nextBeatTime < audioCtx.currentTime + SCHEDULE_AHEAD) {
+    scheduleNote(curBeat, curSubdiv, nextBeatTime);
+    advanceClock();
+  }
+  timerID = setTimeout(scheduler, LOOKAHEAD);
+}
+
+// ── Start / Stop ─────────────────────────────────
+function startMetronome() {
+  initAudio();
+  isPlaying  = true;
+  curBeat    = 0;
+  curSubdiv  = 0;
+  curMeasure = 0;
+  nextBeatTime = audioCtx.currentTime + 0.05;
+
+  if (progressiveOn) {
+    workingBPM = getProgStart();
+    bpm = workingBPM;
+    updateBPMDisplay();
+    document.getElementById('progProgress').classList.add('visible');
+    renderProgressBar();
+  } else {
+    workingBPM = bpm;
+  }
+
+  if (countdownBars > 0) {
+    cntActive = true;
+    cntLeft   = countdownBars;
+    updateCountdownBanner(cntLeft, true);
+  } else {
+    cntActive = false;
+  }
+
+  scheduler();
+
+  const btn = document.getElementById('playBtn');
+  btn.classList.add('playing');
+  document.getElementById('playIcon').innerHTML = '&#9646;&#9646;';
+  document.getElementById('playIcon').classList.add('stop-icon');
+}
+
+function stopMetronome() {
+  isPlaying = false;
+  if (timerID) clearTimeout(timerID);
+  cntActive = false;
+
+  document.getElementById('playBtn').classList.remove('playing');
+  document.getElementById('playIcon').innerHTML = '&#9654;';
+  document.getElementById('playIcon').classList.remove('stop-icon');
+  document.getElementById('countdownBanner').textContent = '';
+
+  // Clear beat dots
+  document.querySelectorAll('.beat-dot').forEach(d => {
+    d.classList.remove('active', 'active-accent');
+  });
+
+  if (progressiveOn) {
+    document.getElementById('progProgress').classList.remove('visible');
+  }
+}
+
+function togglePlay() {
+  isPlaying ? stopMetronome() : startMetronome();
+}
+
+// ═══════════════════════════════════════════════
+// VISUAL BEAT FEEDBACK
+// ═══════════════════════════════════════════════
+function flashBeat(beat, sub) {
+  if (!isPlaying) return;
+  const dots = document.querySelectorAll('.beat-dot');
+
+  dots.forEach(d => d.classList.remove('active', 'active-accent'));
+
+  if (sub === 0 && dots[beat]) {
+    if (beat === 0 && accentOn) {
+      dots[beat].classList.add('active', 'active-accent');
+    } else {
+      dots[beat].classList.add('active');
+    }
+  }
+
+  // Flash BPM number on beat 1
+  if (beat === 0 && sub === 0) {
+    const num = document.getElementById('bpmDisplay');
+    num.classList.add('flash');
+    setTimeout(() => num.classList.remove('flash'), 80);
+  }
+}
+
+function updateCountdownBanner(left, active = true) {
+  const el = document.getElementById('countdownBanner');
+  if (!active || left <= 0) {
+    el.textContent = '';
+  } else {
+    el.textContent = `Décompte — ${left} mesure${left > 1 ? 's' : ''}`;
+  }
+}
+
+function buildBeatDots() {
+  const c = document.getElementById('beatIndicator');
+  c.innerHTML = '';
+  for (let i = 0; i < beatsPerBar; i++) {
+    const d = document.createElement('div');
+    d.className = 'beat-dot' + (i === 0 ? ' first' : '');
+    c.appendChild(d);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// BPM CONTROLS
+// ═══════════════════════════════════════════════
+const TEMPO_NAMES = [
+  [20,  39,  'Larghissimo'],
+  [40,  59,  'Grave'],
+  [60,  65,  'Largo'],
+  [66,  75,  'Adagio'],
+  [76,  107, 'Andante'],
+  [108, 119, 'Moderato'],
+  [120, 155, 'Allegro'],
+  [156, 175, 'Vivace'],
+  [176, 200, 'Presto'],
+  [201, 300, 'Prestissimo'],
+];
+
+function setBPM(val) {
+  bpm = Math.max(20, Math.min(300, Math.round(val)));
+  if (isPlaying && !progressiveOn) workingBPM = bpm;
+  updateBPMDisplay();
+}
+
+function adjustBPM(delta) { setBPM(bpm + delta); }
+
+function updateBPMDisplay() {
+  document.getElementById('bpmDisplay').textContent = Math.round(bpm);
+  document.getElementById('bpmSlider').value = Math.round(bpm);
+  updateSliderFill();
+  updateTempoName();
+}
+
+function updateSliderFill() {
+  const slider = document.getElementById('bpmSlider');
+  const pct = ((bpm - 20) / (300 - 20)) * 100;
+  slider.style.background =
+    `linear-gradient(to right, var(--dark) ${pct}%, var(--border) ${pct}%)`;
+}
+
+function updateTempoName() {
+  const t = TEMPO_NAMES.find(([lo, hi]) => bpm >= lo && bpm <= hi);
+  document.getElementById('tempoName').textContent = t ? t[2] : '';
+}
+
+// ═══════════════════════════════════════════════
+// TIME SIGNATURE & SUBDIVISION
+// ═══════════════════════════════════════════════
+function setBeatsPerMeasure(v) {
+  beatsPerBar = v;
+  buildBeatDots();
+  if (isPlaying) curBeat = curBeat % beatsPerBar;
+}
+
+function setNoteValue(v) { noteValue = v; }
+
+function setSubdiv(v) {
+  subdivision = v;
+  if (isPlaying) curSubdiv = 0;
+  document.querySelectorAll('.subdiv-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.val) === v);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// ACCENT
+// ═══════════════════════════════════════════════
+function setAccent(v) {
+  accentOn = v;
+  document.getElementById('accentLabel').textContent = v ? 'Activé' : 'Désactivé';
+}
+
+// ═══════════════════════════════════════════════
+// COUNTDOWN
+// ═══════════════════════════════════════════════
+function setCountdown(bars) {
+  countdownBars = bars;
+  document.querySelectorAll('.cnt-btn').forEach(b => {
+    b.classList.toggle('active', parseInt(b.dataset.bars) === bars);
+  });
+}
+
+// ═══════════════════════════════════════════════
+// TAP TEMPO
+// ═══════════════════════════════════════════════
+let taps = [];
+let tapTimer = null;
+
+function tap() {
+  const now = performance.now();
+  if (tapTimer) clearTimeout(tapTimer);
+  tapTimer = setTimeout(() => { taps = []; }, 2500);
+
+  taps.push(now);
+  if (taps.length > 8) taps.shift();
+
+  if (taps.length >= 2) {
+    let sum = 0;
+    for (let i = 1; i < taps.length; i++) sum += taps[i] - taps[i-1];
+    setBPM(Math.round(60000 / (sum / (taps.length - 1))));
+  }
+
+  // Visual flash
+  const btn = document.getElementById('tapBtn');
+  btn.classList.add('tapped');
+  setTimeout(() => btn.classList.remove('tapped'), 160);
+}
+
+// ═══════════════════════════════════════════════
+// STOPWATCH
+// ═══════════════════════════════════════════════
+let swRunning  = false;
+let swStart    = 0;
+let swStored   = 0;
+let swInterval = null;
+
+function toggleStopwatch() {
+  swRunning = !swRunning;
+  const btn = document.getElementById('swBtn');
+  if (swRunning) {
+    swStart    = Date.now() - swStored;
+    swInterval = setInterval(tickStopwatch, 500);
+    btn.textContent = 'Pause';
+    btn.classList.add('active-btn');
+  } else {
+    clearInterval(swInterval);
+    swStored = Date.now() - swStart;
+    btn.textContent = 'Reprendre';
+    btn.classList.remove('active-btn');
+  }
+}
+
+function resetStopwatch() {
+  swRunning = false;
+  clearInterval(swInterval);
+  swStored = 0;
+  document.getElementById('swDisplay').textContent = '00:00';
+  const btn = document.getElementById('swBtn');
+  btn.textContent = 'Démarrer';
+  btn.classList.remove('active-btn');
+}
+
+function tickStopwatch() {
+  const ms   = Date.now() - swStart;
+  const hrs  = Math.floor(ms / 3600000);
+  const mins = Math.floor((ms % 3600000) / 60000);
+  const secs = Math.floor((ms % 60000) / 1000);
+  document.getElementById('swDisplay').textContent =
+    hrs > 0
+      ? `${pad(hrs)}:${pad(mins)}:${pad(secs)}`
+      : `${pad(mins)}:${pad(secs)}`;
+}
+
+// ═══════════════════════════════════════════════
+// TIMER (countdown)
+// ═══════════════════════════════════════════════
+let timerRunning = false;
+let timerEnd     = 0;
+let timerMs      = 5 * 60 * 1000;
+let timerIv      = null;
+
+function onTimerInput() {
+  const m = parseInt(document.getElementById('timerMin').value) || 0;
+  const s = parseInt(document.getElementById('timerSec').value) || 0;
+  timerMs = (m * 60 + s) * 1000;
+  if (!timerRunning) renderTimer(timerMs);
+}
+
+function toggleTimer() {
+  timerRunning = !timerRunning;
+  const btn = document.getElementById('timerBtn');
+  if (timerRunning) {
+    timerEnd = Date.now() + timerMs;
+    timerIv  = setInterval(tickTimer, 500);
+    btn.textContent = 'Pause';
+    btn.classList.add('active-btn');
+  } else {
+    clearInterval(timerIv);
+    timerMs = timerEnd - Date.now();
+    btn.textContent = 'Reprendre';
+    btn.classList.remove('active-btn');
+  }
+}
+
+function resetTimer() {
+  timerRunning = false;
+  clearInterval(timerIv);
+  const m = parseInt(document.getElementById('timerMin').value) || 5;
+  const s = parseInt(document.getElementById('timerSec').value) || 0;
+  timerMs = (m * 60 + s) * 1000;
+  renderTimer(timerMs);
+  document.getElementById('timerDisplay').classList.remove('warning');
+  const btn = document.getElementById('timerBtn');
+  btn.textContent = 'Démarrer';
+  btn.classList.remove('active-btn');
+}
+
+function tickTimer() {
+  const remaining = timerEnd - Date.now();
+  if (remaining <= 0) {
+    clearInterval(timerIv);
+    timerRunning = false;
+    timerMs = 0;
+    renderTimer(0);
+    document.getElementById('timerBtn').textContent = 'Démarrer';
+    document.getElementById('timerBtn').classList.remove('active-btn');
+    // Bell
+    playBell();
+    return;
+  }
+  document.getElementById('timerDisplay').classList.toggle('warning', remaining < 60000);
+  renderTimer(remaining);
+}
+
+function renderTimer(ms) {
+  const mins = Math.floor(ms / 60000);
+  const secs = Math.floor((ms % 60000) / 1000);
+  document.getElementById('timerDisplay').textContent = `${pad(mins)}:${pad(secs)}`;
+}
+
+function playBell() {
+  initAudio();
+  const ctx = audioCtx;
+  const t = ctx.currentTime;
+  const osc = ctx.createOscillator();
+  const g   = ctx.createGain();
+  osc.type = 'sine';
+  osc.frequency.value = 880;
+  g.gain.setValueAtTime(0.6, t);
+  g.gain.exponentialRampToValueAtTime(0.001, t + 2.0);
+  osc.connect(g);
+  g.connect(ctx.destination);
+  osc.start(t);
+  osc.stop(t + 2.1);
+}
+
+// ═══════════════════════════════════════════════
+// PROGRESSIVE METRONOME
+// ═══════════════════════════════════════════════
+function getProgStart() { return Math.max(20, parseInt(document.getElementById('progStart').value) || 80); }
+function getProgEnd()   { return Math.min(300, parseInt(document.getElementById('progEnd').value) || 160); }
+function getProgIncr()  { return Math.max(1, parseInt(document.getElementById('progIncr').value) || 5); }
+function getProgBars()  { return Math.max(1, parseInt(document.getElementById('progBars').value) || 4); }
+
+function setProgressive(v) {
+  progressiveOn = v;
+  document.getElementById('progDot').classList.toggle('enabled', v);
+  if (v && !progPanelOpen) openProgPanel();
+}
+
+function toggleProgPanel() {
+  progPanelOpen ? closeProgPanel() : openProgPanel();
+}
+
+function openProgPanel() {
+  progPanelOpen = true;
+  document.getElementById('progBody').classList.add('open');
+  document.getElementById('progChevron').classList.add('open');
+}
+
+function closeProgPanel() {
+  progPanelOpen = false;
+  document.getElementById('progBody').classList.remove('open');
+  document.getElementById('progChevron').classList.remove('open');
+}
+
+function renderProgressBar() {
+  const start = getProgStart();
+  const end   = getProgEnd();
+  const pct   = end > start ? ((workingBPM - start) / (end - start)) * 100 : 0;
+  document.getElementById('progFill').style.width     = `${Math.max(0, Math.min(100, pct))}%`;
+  document.getElementById('progLabelStart').textContent   = `${start} BPM`;
+  document.getElementById('progLabelCurrent').textContent = `${Math.round(workingBPM)} BPM`;
+  document.getElementById('progLabelEnd').textContent     = `${end} BPM`;
+}
+
+// ═══════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════
+function pad(n) { return String(n).padStart(2, '0'); }
+
+// ═══════════════════════════════════════════════
+// KEYBOARD & WHEEL
+// ═══════════════════════════════════════════════
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+  if (e.code === 'Space')     { e.preventDefault(); togglePlay(); }
+  if (e.code === 'KeyT')      { tap(); }
+  if (e.code === 'ArrowUp')   { e.preventDefault(); adjustBPM(e.shiftKey ? 5 : 1); }
+  if (e.code === 'ArrowDown') { e.preventDefault(); adjustBPM(e.shiftKey ? -5 : -1); }
+});
+
+// Mousewheel on BPM number
+document.getElementById('bpmRow').addEventListener('wheel', e => {
+  e.preventDefault();
+  adjustBPM(e.deltaY < 0 ? 1 : -1);
+}, { passive: false });
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+buildBeatDots();
+updateSliderFill();
+updateTempoName();
+renderTimer(timerMs);
+</script>
+</body>
+</html>
