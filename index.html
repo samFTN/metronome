@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Guitarisation — Métronome</title>
+  <title>Guitarisation™ — Métronome</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -19,7 +19,7 @@
       --muted2: #6b7280;
       --border: #e8e8e4;
       --border2: #f0f0ec;
-      --shadow: 0 40px 100px rgba(0,0,0,0.08), 0 16px 40px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.04);
+      --shadow: 0 60px 120px rgba(0,0,0,0.10), 0 20px 48px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
       --r: 22px;
       --r-sm: 11px;
       --r-xs: 8px;
@@ -32,6 +32,7 @@
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
+      background-image: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(255,255,255,0.85) 0%, transparent 70%);
       min-height: 100vh;
       display: flex;
       flex-direction: column;
@@ -40,36 +41,153 @@
       color: var(--text);
     }
 
+    /* ─── PAGE LOAD ANIMATIONS ─── */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes flipFromLeft {
+      from {
+        opacity: 0;
+        transform: perspective(900px) translateX(-70px) rotateY(-18deg);
+      }
+      to {
+        opacity: 1;
+        transform: perspective(900px) translateX(0) rotateY(0deg);
+      }
+    }
+
+    .anim-header { animation: fadeIn 0.45s ease both; }
+    .anim-card   { animation: flipFromLeft 0.65s cubic-bezier(0.08, 0.92, 0.18, 1) 0.05s both; }
+
     /* ─── HEADER ─── */
     header {
       width: 100%;
       max-width: 760px;
-      padding: 4px 0 10px;
-      display: flex;
-      align-items: flex-end;
-      justify-content: space-between;
+      padding: 10px 0 18px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      align-items: center;
     }
 
-    .logo {
-      font-size: 20px;
+    .header-byline {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--muted2);
+      letter-spacing: 0.2px;
+      justify-self: start;
+    }
+
+    .header-logo {
+      justify-self: center;
+    }
+
+    .header-logo img {
+      height: 42px;
+      width: auto;
+      display: block;
+    }
+
+    /* text fallback if logo.png missing */
+    .header-logo-text {
+      font-size: 22px;
       font-weight: 900;
       letter-spacing: -0.5px;
       color: var(--dark);
       line-height: 1;
     }
 
-    .logo em {
+    .header-logo-text em {
       font-style: normal;
       color: var(--accent);
     }
 
-    .logo-tag {
-      font-size: 10px;
+    .header-cta {
+      justify-self: end;
+    }
+
+    .btn-school {
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 10px;
+      background: #e8c23a;
+      color: #fff;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      white-space: nowrap;
+      box-shadow: 0 4px 16px rgba(232, 194, 58, 0.35);
+      transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.12s;
+    }
+
+    .btn-school:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(232, 194, 58, 0.45);
+      background: #d4af30;
+    }
+
+    .btn-school:active { transform: translateY(0); }
+
+    /* ─── HAMBURGER MENU (petits écrans) ─── */
+    .hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 36px;
+      height: 36px;
+      padding: 6px;
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-xs);
+      cursor: pointer;
+      position: relative;
+    }
+
+    .hamburger span {
+      display: block;
+      height: 2px;
+      border-radius: 2px;
+      background: var(--dark);
+      transition: background 0.15s;
+    }
+
+    .hamburger:hover span { background: var(--accent); }
+
+    .nav-dropdown {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      box-shadow: 0 12px 36px rgba(0,0,0,0.12);
+      min-width: 220px;
+      overflow: hidden;
+      z-index: 100;
+    }
+
+    .nav-dropdown.open { display: block; }
+
+    .nav-dropdown a {
+      display: block;
+      padding: 14px 18px;
+      font-size: 13px;
       font-weight: 600;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      color: var(--muted);
-      margin-top: 3px;
+      color: var(--text);
+      text-decoration: none;
+      transition: background 0.1s;
+    }
+
+    .nav-dropdown a:hover { background: var(--border2); }
+
+    .nav-dropdown a::before {
+      content: '→ ';
+      color: #e8c23a;
     }
 
     .shortcuts-hint {
@@ -78,6 +196,7 @@
       font-weight: 500;
       text-align: right;
       line-height: 1.6;
+      display: none;
     }
 
     .shortcut-key {
@@ -464,6 +583,7 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      align-self: stretch;
     }
 
     .tool-group:last-child { border-right: none; }
@@ -505,6 +625,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
+      flex: 1;
     }
 
     .time-display {
@@ -783,7 +904,11 @@
     /* ─── RESPONSIVE ─── */
     @media (max-width: 640px) {
       body { padding: 16px 12px 60px; }
-      header { padding-bottom: 16px; }
+      header { padding: 10px 0 14px; grid-template-columns: 1fr auto 1fr; }
+      .header-logo img { height: 32px; }
+      .header-byline { font-size: 10px; }
+      .btn-school { display: none; }
+      .hamburger  { display: flex; }
       .shortcuts-hint { display: none; }
       .sec-top { padding: 28px 20px 28px; }
       .bpm-number { font-size: 88px; letter-spacing: -4px; }
@@ -808,22 +933,32 @@
 <body>
 
 <!-- ─── HEADER ─── -->
-<header>
-  <div>
-    <div class="logo">Guitar<em>isation</em></div>
-    <div class="logo-tag">Métronome</div>
+<header class="anim-header">
+  <div class="header-byline">par Samuel Ferton</div>
+
+  <div class="header-logo">
+    <img src="Logo Guitarisation.png" alt="Guitarisation™ — L'École de Guitare 2.0"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+    <div class="header-logo-text" style="display:none">Guitar<em>isation</em>™</div>
   </div>
-  <div class="shortcuts-hint">
-    <span class="shortcut-key">Espace</span> Play/Stop &nbsp;
-    <span class="shortcut-key">T</span> Tap tempo<br>
-    <span class="shortcut-key">↑ ↓</span> ±1 BPM &nbsp;
-    <span class="shortcut-key">⇧↑ ⇧↓</span> ±5 BPM &nbsp;
-    <span class="shortcut-key">Molette</span> BPM
+
+  <div class="header-cta" style="position:relative;">
+    <a class="btn-school" href="https://guitarschool.guitarisation.fr/login" target="_blank" rel="noopener">
+      Aller sur l'école Guitarisation™
+    </a>
+    <button class="hamburger" id="hamburgerBtn" onclick="toggleNav()" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+    <div class="nav-dropdown" id="navDropdown">
+      <a href="https://guitarschool.guitarisation.fr/login" target="_blank" rel="noopener">
+        Aller sur l'école Guitarisation™
+      </a>
+    </div>
   </div>
 </header>
 
 <!-- ─── MAIN CARD ─── -->
-<div class="card">
+<div class="card anim-card">
 
   <!-- TOP: BPM + Controls -->
   <div class="sec-top">
@@ -1020,6 +1155,20 @@
 
 
 </div><!-- .card -->
+
+<footer style="
+  width: 100%;
+  max-width: 760px;
+  margin-top: 20px;
+  padding: 12px 0 6px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--muted);
+  border-top: 1px solid var(--border2);
+">
+  © 2026 Guitarisation™ — L'École de Guitare 2.0 · par Samuel Ferton
+</footer>
 
 <script>
 // ═══════════════════════════════════════════════
@@ -1583,6 +1732,16 @@ buildBeatDots();
 updateSliderFill();
 updateTempoName();
 renderTimer(timerMs);
+
+// ─── HAMBURGER NAV ───
+function toggleNav() {
+  document.getElementById('navDropdown').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#hamburgerBtn') && !e.target.closest('#navDropdown')) {
+    document.getElementById('navDropdown').classList.remove('open');
+  }
+});
 </script>
 </body>
 </html>
