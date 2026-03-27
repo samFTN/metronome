@@ -929,6 +929,61 @@
       .adj-btn { width: 42px; }
       .adj-btn.wide { width: 50px; }
     }
+
+    .help-btn {
+      position: fixed;
+      bottom: 24px; right: 24px;
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: var(--dark);
+      color: white;
+      font-size: 20px; font-weight: 700; font-family: inherit;
+      border: none; cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.22);
+      transition: background 0.15s, transform 0.12s;
+      z-index: 200;
+      line-height: 1;
+    }
+    .help-btn:hover { background: var(--accent); transform: scale(1.08); }
+    .help-btn.open  { background: var(--accent); }
+    .help-panel {
+      display: none;
+      position: fixed;
+      bottom: 78px; right: 24px;
+      width: 300px;
+      background: white;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.14), 0 4px 16px rgba(0,0,0,0.08);
+      z-index: 199;
+      overflow: hidden;
+    }
+    .help-panel.open { display: block; }
+    .help-header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 14px 16px 12px;
+      border-bottom: 1px solid var(--border2);
+    }
+    .help-title { font-size: 13px; font-weight: 700; color: var(--dark); }
+    .help-close {
+      background: none; border: none; cursor: pointer;
+      font-size: 14px; color: var(--muted2);
+      line-height: 1; padding: 2px 4px; border-radius: 4px;
+      transition: color 0.1s, background 0.1s;
+    }
+    .help-close:hover { color: var(--dark); background: var(--border2); }
+    .help-body {
+      padding: 14px 16px 16px;
+      font-size: 13px; line-height: 1.6; color: var(--text);
+      max-height: 320px; overflow-y: auto;
+    }
+    .help-body p { margin-bottom: 10px; }
+    .help-body p:last-child { margin-bottom: 0; }
+    .help-body strong { color: var(--dark); font-weight: 700; }
+    @media (max-width: 640px) {
+      .help-panel { width: calc(100vw - 32px); right: 16px; bottom: 72px; }
+      .help-btn   { bottom: 16px; right: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -1172,6 +1227,19 @@
 </footer>
 
 <script>
+function toggleHelp() {
+  const btn   = document.getElementById('helpBtn');
+  const panel = document.getElementById('helpPanel');
+  const isOpen = panel.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#helpBtn') && !e.target.closest('#helpPanel')) {
+    document.getElementById('helpPanel').classList.remove('open');
+    document.getElementById('helpBtn').classList.remove('open');
+  }
+});
+
 // ═══════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════
@@ -1744,5 +1812,20 @@ document.addEventListener('click', e => {
   }
 });
 </script>
+
+<button class="help-btn" id="helpBtn" onclick="toggleHelp()" aria-label="Aide">?</button>
+<div class="help-panel" id="helpPanel">
+  <div class="help-header">
+    <span class="help-title">Comment utiliser le Métronome</span>
+    <button class="help-close" onclick="toggleHelp()" aria-label="Fermer">✕</button>
+  </div>
+  <div class="help-body">
+    <p><strong>BPM</strong><br>Utilisez le slider, les boutons ±1 / ±5, ou la molette de la souris sur le chiffre pour ajuster le tempo.</p>
+    <p><strong>Tap Tempo</strong><br>Tapez plusieurs fois sur le bouton "Tap" en rythme pour détecter automatiquement votre tempo.</p>
+    <p><strong>Subdivisions</strong><br>Choisissez entre noire, croche, triolet ou double croche pour entendre les subdivisions du temps.</p>
+    <p><strong>Tempo progressif</strong><br>Activez cette option pour accélérer automatiquement le BPM par paliers — parfait pour travailler la vitesse progressivement.</p>
+    <p><strong>Chronomètre &amp; Minuteur</strong><br>Utilisez-les pour chronométrer vos sessions de pratique.</p>
+  </div>
+</div>
 </body>
 </html>
